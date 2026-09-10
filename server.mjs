@@ -7,7 +7,7 @@ app.use(express.json({ limit: "20mb" }));
 app.use(express.static("public"));
 
 // আপনার আসল API Key এখানে বসান
-const ai = new GoogleGenAI({ apiKey: "const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });" });
+const ai = new GoogleGenAI();
 
 app.post("/chat", async (req, res) => {
   try {
