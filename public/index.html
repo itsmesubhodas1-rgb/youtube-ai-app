@@ -5,21 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>YouTube AI Assistant</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Sign-In SDK -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="bg-slate-900 text-white flex flex-col h-screen overflow-hidden">
 
-  <!-- লগইন ওভারলে স্ক্রিন -->
+  <!-- লগইন স্ক্রিন -->
   <div id="loginOverlay" class="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center z-50 p-4">
     <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl flex flex-col items-center max-w-sm w-full text-center">
       <div class="w-16 h-16 bg-red-600/10 text-red-500 rounded-full flex items-center justify-center mb-4">
         <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
       </div>
       <h2 class="text-2xl font-bold mb-2">YouTube AI Assistant</h2>
-      <p class="text-slate-400 text-sm mb-6">অ্যাপটি ব্যবহার করার জন্য আপনার গুগল একাউন্ট দিয়ে সাইন-ইন করুন।</p>
+      <p class="text-slate-400 text-sm mb-6">অ্যাপটি ব্যবহার করার জন্য গুগল দিয়ে সাইন-ইন করুন।</p>
       
-      <!-- গুগল অফিশিয়াল সাইন-ইন বাটন -->
       <div id="g_id_onload"
            data-client_id="231722960025-hqt16pajnl4kg9lddoa3flppj4ttof8n.apps.googleusercontent.com"
            data-callback="handleCredentialResponse"
@@ -36,32 +34,51 @@
       <h1 class="font-bold text-lg hidden sm:inline">YouTube AI Assistant</h1>
     </div>
     
-    <!-- ভাষা নির্বাচন ও ইউজার প্রোফাইল -->
-    <div class="flex items-center gap-3">
-      <select id="languageSelect" onchange="changeLanguage(this.value)" class="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-xs rounded-xl px-2.5 py-1.5 text-white outline-none cursor-pointer transition">
+    <div class="flex items-center gap-2">
+      <!-- সাইজ অপশন -->
+      <select id="aspectRatioSelect" class="bg-slate-700 border border-slate-600 text-xs rounded-xl px-2 py-1.5 text-white outline-none cursor-pointer">
+        <option value="9:16">📱 9:16 (Shorts)</option>
+        <option value="16:9">🖥️ 16:9 (Video)</option>
+        <option value="1:1" selected>⏹️ 1:1 (Square)</option>
+      </select>
+
+      <!-- ভাষা অপশন -->
+      <select id="languageSelect" onchange="changeLanguage(this.value)" class="bg-slate-700 border border-slate-600 text-xs rounded-xl px-2 py-1.5 text-white outline-none cursor-pointer">
         <option value="Bengali" selected>🇧🇩 বাংলা</option>
         <option value="English">🇺🇸 English</option>
         <option value="Hindi">🇮🇳 हिंदी</option>
       </select>
 
+      <!-- ক্লিয়ার চ্যাট বাটন -->
+      <button onclick="clearChat()" title="Clear Chat" class="p-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-xl text-slate-300 hover:text-red-400 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+      </button>
+
       <div id="userProfile" class="hidden flex items-center gap-2">
-        <img id="userAvatar" src="" class="w-8 h-8 rounded-full border border-slate-600 object-cover" alt="User">
-        <span id="userName" class="text-xs font-medium hidden md:inline text-slate-300"></span>
-        <button id="logoutBtn" onclick="logOut()" class="text-xs bg-red-600/80 hover:bg-red-500 px-2.5 py-1.5 rounded-lg border border-red-500/50 transition">লগআউট</button>
+        <img id="userAvatar" src="" class="w-7 h-7 rounded-full border border-slate-600 object-cover" alt="User">
+        <button id="logoutBtn" onclick="logOut()" class="text-xs bg-red-600/80 hover:bg-red-500 px-2 py-1 rounded-lg border border-red-500/50 transition">লগআউট</button>
       </div>
     </div>
   </header>
 
-  <!-- চ্যাটবক্স -->
+  <!-- কুইক প্রম্পট বাটনসমূহ -->
+  <div class="bg-slate-900/90 border-b border-slate-800 px-4 py-2 flex items-center gap-2 overflow-x-auto text-xs no-scrollbar">
+    <button onclick="sendQuickPrompt('একটি ভাইরাল কমেডি শর্টসের স্ক্রিপ্ট লিখে দাও')" class="whitespace-nowrap bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-full text-slate-300">🎬 ভাইরাল স্ক্রিপ্ট</button>
+    <button onclick="sendQuickPrompt('রান্নাঘরে আলু ও পটলের ঝগড়ার মজার 3D ছবি বানাও')" class="whitespace-nowrap bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-full text-slate-300">🥔 আলু-পটল 3D ছবি</button>
+    <button onclick="sendQuickPrompt('ইউটিউব শর্টস ভাইরাল করার সেরা ১০টি ট্রেন্ডিং হ্যাশট্যাগ ও ট্যাগ দাও')" class="whitespace-nowrap bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-full text-slate-300">🏷️ ভাইরাল হ্যাশট্যাগ</button>
+    <button onclick="sendQuickPrompt('ইউটিউব ভিডিওর আকর্ষণীয় ৩টি ক্লিকবেট টাইটেল দাও')" class="whitespace-nowrap bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-full text-slate-300">🔥 টাইটেল আইডিয়া</button>
+  </div>
+
+  <!-- চ্যাট স্ক্রিন -->
   <main id="chatBox" class="flex-1 overflow-y-auto p-4 space-y-4 max-w-4xl mx-auto w-full">
     <div class="flex items-start gap-3">
-      <div id="welcomeMessage" class="bg-slate-800 p-4 rounded-2xl border border-slate-700 max-w-[85%] text-slate-200">
-        নমস্কার! আমি আপনার ইউটিউব কনটেন্ট সহকারী। চিত্র বা ভিডিওর জন্য ছবি তৈরি করতে লিখুন “ছবি বানাও...” 🎨 অথবা থাম্বনেইল পাঠিয়ে মতামত নিন!
+      <div id="welcomeMessage" class="bg-slate-800 p-4 rounded-2xl border border-slate-700 max-w-[85%] text-slate-200 text-sm leading-relaxed">
+        নমস্কার! আমি আপনার ইউটিউব সহকারী। ছবি তৈরি করতে লিখুন “ছবি বানাও...” 🎨 অথবা থাম্বনেইল পাঠিয়ে মতামত নিন!
       </div>
     </div>
   </main>
 
-  <!-- প্রিভিউ বক্স -->
+  <!-- ইমেজ প্রিভিউ -->
   <div id="previewContainer" class="hidden px-4 py-2 bg-slate-800/90 border-t border-slate-700 max-w-4xl mx-auto w-full flex items-center gap-3">
     <img id="imagePreview" src="" alt="Preview" class="h-16 w-16 object-cover rounded-xl border border-slate-600">
     <button id="removeImage" class="text-xs text-red-400 hover:text-red-300 font-medium">ছবি বাতিল করুন</button>
@@ -71,12 +88,18 @@
   <footer class="p-4 bg-slate-900 border-t border-slate-800">
     <form id="chatForm" class="max-w-4xl mx-auto flex items-center gap-2 bg-slate-800/80 p-2 rounded-2xl border border-slate-700">
       <input type="file" id="imageInput" accept="image/*" class="hidden">
-      <button type="button" onclick="document.getElementById('imageInput').click()" class="p-2.5 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl transition flex items-center gap-1 text-sm">
+      
+      <!-- ছবি আপলোড বাটন -->
+      <button type="button" onclick="document.getElementById('imageInput').click()" class="p-2.5 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl transition">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-        <span id="uploadLabel" class="hidden sm:inline">ছবি দিন</span>
       </button>
 
-      <input type="text" id="userInput" placeholder="প্রশ্ন লিখুন অথবা ছবি তৈরি করতে বলুন..." class="flex-1 bg-transparent border-none outline-none px-3 text-white placeholder-slate-500 text-sm">
+      <!-- ভয়েস টাইপিং মাইক বাটন -->
+      <button type="button" id="micBtn" onclick="toggleSpeech()" class="p-2.5 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl transition">
+        <svg id="micIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+      </button>
+
+      <input type="text" id="userInput" placeholder="প্রশ্ন লিখুন অথবা ছবি তৈরি করতে বলুন..." class="flex-1 bg-transparent border-none outline-none px-2 text-white placeholder-slate-500 text-sm">
       
       <button type="submit" class="bg-cyan-600 hover:bg-cyan-500 text-white p-2.5 rounded-xl transition">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
@@ -88,41 +111,41 @@
     const loginOverlay = document.getElementById("loginOverlay");
     const userProfile = document.getElementById("userProfile");
     const userAvatar = document.getElementById("userAvatar");
-    const userName = document.getElementById("userName");
     const languageSelect = document.getElementById("languageSelect");
+    const aspectRatioSelect = document.getElementById("aspectRatioSelect");
     const welcomeMessage = document.getElementById("welcomeMessage");
     const userInput = document.getElementById("userInput");
-    const uploadLabel = document.getElementById("uploadLabel");
     const logoutBtn = document.getElementById("logoutBtn");
+    const micBtn = document.getElementById("micBtn");
+    const micIcon = document.getElementById("micIcon");
 
-    // ভাষার টেক্সট ডিকশনারি
     const langData = {
       Bengali: {
-        welcome: "নমস্কার! আমি আপনার ইউটিউব কনটেন্ট সহকারী। চিত্র বা ভিডিওর জন্য ছবি তৈরি করতে লিখুন “ছবি বানাও...” 🎨 অথবা থাম্বনেইল পাঠিয়ে মতামত নিন!",
+        welcome: "নমস্কার! আমি আপনার ইউটিউব সহকারী। ছবি তৈরি করতে লিখুন “ছবি বানাও...” 🎨 অথবা থাম্বনেইল পাঠিয়ে মতামত নিন!",
         placeholder: "প্রশ্ন লিখুন অথবা ছবি তৈরি করতে বলুন...",
-        upload: "ছবি দিন",
         logout: "লগআউট",
         loading: "ভাবছি...",
         copy: "কপি করুন",
-        download: "ছবি ডাউনলোড করুন"
+        download: "ছবি ডাউনলোড করুন",
+        speechLang: "bn-IN"
       },
       English: {
-        welcome: "Hello! I am your YouTube Content Assistant. Type 'generate an image...' to create artwork 🎨 or upload thumbnails for review!",
+        welcome: "Hello! I am your YouTube Assistant. Type 'create an image...' 🎨 or upload thumbnails for review!",
         placeholder: "Ask a question or request an image...",
-        upload: "Upload",
         logout: "Log Out",
         loading: "Thinking...",
         copy: "Copy",
-        download: "Download Image"
+        download: "Download Image",
+        speechLang: "en-US"
       },
       Hindi: {
-        welcome: "नमस्ते! मैं आपका यूट्यूब कंटेंट असिस्टेंट हूँ। चित्र बनाने के लिए लिखें 'चित्र बनाएं...' 🎨 या थंबनेल भेजकर समीक्षा लें!",
+        welcome: "नमस्ते! मैं आपका यूट्यूब असिस्टेंट हूँ। चित्र बनाने के लिए लिखें 'चित्र बनाएं...' 🎨 या थंबनेल भेजें!",
         placeholder: "प्रश्न पूछें या चित्र बनाने को कहें...",
-        upload: "फ़ोटो जोड़ें",
         logout: "लॉगआउट",
         loading: "सोच रहा हूँ...",
         copy: "कॉपी करें",
-        download: "डाउनलोड करें"
+        download: "डाउनलोड करें",
+        speechLang: "hi-IN"
       }
     };
 
@@ -130,7 +153,6 @@
       const data = langData[lang] || langData.Bengali;
       welcomeMessage.innerText = data.welcome;
       userInput.placeholder = data.placeholder;
-      uploadLabel.innerText = data.upload;
       logoutBtn.innerText = data.logout;
       localStorage.setItem("selected_lang", lang);
     }
@@ -152,7 +174,6 @@
 
     function showAuthenticatedUser(user) {
       userAvatar.src = user.picture;
-      userName.textContent = user.name;
       userProfile.classList.remove("hidden");
       loginOverlay.classList.add("hidden");
     }
@@ -162,11 +183,72 @@
       location.reload();
     }
 
+    function clearChat() {
+      chatBox.innerHTML = `
+        <div class="flex items-start gap-3">
+          <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 max-w-[85%] text-slate-200 text-sm leading-relaxed">
+            ${(langData[languageSelect.value] || langData.Bengali).welcome}
+          </div>
+        </div>
+      `;
+    }
+
+    function sendQuickPrompt(promptText) {
+      userInput.value = promptText;
+      chatForm.dispatchEvent(new Event('submit'));
+    }
+
+    // টেক্সট-টু-স্পিচ (ভয়েস শোনানো)
+    function speakText(text) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      const curLang = languageSelect.value;
+      utterance.lang = (langData[curLang] || langData.Bengali).speechLang;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // স্পিচ-টু-টেক্সট (ভয়েস টাইপিং)
+    let recognition;
+    let isListening = false;
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        isListening = true;
+        micIcon.classList.add("text-red-500", "animate-pulse");
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        userInput.value += (userInput.value ? " " : "") + transcript;
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+        micIcon.classList.remove("text-red-500", "animate-pulse");
+      };
+    }
+
+    function toggleSpeech() {
+      if (!recognition) {
+        alert("আপনার ব্রাউজারে ভয়েস টাইপিং সাপোর্ট করে না। দয়া করে Chrome ব্রাউজার ব্যবহার করুন।");
+        return;
+      }
+      if (isListening) {
+        recognition.stop();
+      } else {
+        const curLang = languageSelect.value;
+        recognition.lang = (langData[curLang] || langData.Bengali).speechLang;
+        recognition.start();
+      }
+    }
+
     window.onload = function() {
       const savedUser = localStorage.getItem("user_info");
-      if (savedUser) {
-        showAuthenticatedUser(JSON.parse(savedUser));
-      }
+      if (savedUser) showAuthenticatedUser(JSON.parse(savedUser));
       const savedLang = localStorage.getItem("selected_lang") || "Bengali";
       languageSelect.value = savedLang;
       changeLanguage(savedLang);
@@ -221,7 +303,8 @@
           body: JSON.stringify({ 
             message: text, 
             image: currentImage,
-            language: languageSelect.value 
+            language: languageSelect.value,
+            aspectRatio: aspectRatioSelect.value
           })
         });
         const data = await res.json();
@@ -238,7 +321,7 @@
       div.className = "flex justify-end";
       let imgHTML = imageSrc ? `<img src="${imageSrc}" class="w-48 h-48 object-cover rounded-xl mb-2 border border-blue-400">` : "";
       div.innerHTML = `
-        <div class="bg-blue-600 text-white p-3 rounded-2xl max-w-[85%]">
+        <div class="bg-blue-600 text-white p-3 rounded-2xl max-w-[85%] text-sm">
           ${imgHTML}
           <p>${text}</p>
         </div>
@@ -269,13 +352,17 @@
       }
 
       div.innerHTML = `
-        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 max-w-[85%] text-slate-200">
+        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 max-w-[85%] text-slate-200 text-sm">
           <p class="whitespace-pre-wrap">${text}</p>
           ${imgHTML}
-          <div class="mt-2 flex gap-2">
-            <button onclick="navigator.clipboard.writeText(this.parentElement.previousElementSibling.innerText)" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 transition">
+          <div class="mt-3 flex gap-3 pt-2 border-t border-slate-700/60">
+            <button onclick="navigator.clipboard.writeText(this.closest('.bg-slate-800').querySelector('p').innerText)" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 transition">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
               ${copyText}
+            </button>
+            <button onclick="speakText(this.closest('.bg-slate-800').querySelector('p').innerText)" class="text-xs text-slate-400 hover:text-cyan-400 flex items-center gap-1 transition" title="Listen Voice">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+              শুনুন
             </button>
           </div>
         </div>
