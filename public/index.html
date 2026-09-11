@@ -67,6 +67,28 @@
     .bot-content {
       white-space: pre-wrap;
     }
+    .generated-img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 10px;
+      display: block;
+      border: 1px solid #475569;
+    }
+    .download-btn {
+      margin-top: 8px;
+      background-color: #0284c7;
+      color: white;
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .download-btn:hover {
+      background-color: #0369a1;
+    }
     .copy-btn {
       margin-top: 8px;
       background-color: #334155;
@@ -180,7 +202,7 @@
 
   <div id="chat-container">
     <div class="message bot">
-      <div class="bot-content">নমস্কার! আমি আপনার ইউটিউব কনটেন্ট সহকারী। যেকোনো প্রশ্ন করতে পারেন অথবা ছবি/থাম্বনেইল আপলোড করে পরামর্শ নিতে পারেন! 🎬</div>
+      <div class="bot-content">নমস্কার! আমি আপনার ইউটিউব কনটেন্ট সহকারী। চিত্র বা ভিডিওর জন্য ছবি তৈরি করতে লিখুন "ছবি বানাও..." 🎨 অথবা থাম্বনেইল পাঠিয়ে মতামত নিন!</div>
     </div>
   </div>
 
@@ -196,7 +218,7 @@
     <button class="upload-btn" onclick="document.getElementById('file-input').click()">
       <i class="fa-solid fa-image"></i> ছবি দিন
     </button>
-    <input type="text" id="user-input" placeholder="প্রশ্ন লিখুন বা ছবি পাঠিয়ে মতামত চান..." onkeypress="handleEnter(event)">
+    <input type="text" id="user-input" placeholder="প্রশ্ন লিখুন অথবা ছবি তৈরি করতে বলুন..." onkeypress="handleEnter(event)">
     <button id="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
   </div>
 
@@ -259,7 +281,7 @@
       sendBtn.disabled = true;
       const botMsgDiv = document.createElement("div");
       botMsgDiv.className = "message bot";
-      botMsgDiv.innerHTML = `<div class="bot-content">চিন্তাভাবনা করছি... ⏳</div>`;
+      botMsgDiv.innerHTML = `<div class="bot-content">তৈরি করা হচ্ছে... ⏳</div>`;
       chatContainer.appendChild(botMsgDiv);
       chatContainer.scrollTop = chatContainer.scrollHeight;
 
@@ -271,7 +293,13 @@
         });
         const data = await res.json();
         
-        if (data.reply) {
+        if (data.generatedImage) {
+          botMsgDiv.innerHTML = `
+            <div class="bot-content">${escapeHTML(data.reply)}</div>
+            <img src="${data.generatedImage}" class="generated-img" alt="AI Generated Image" />
+            <a href="${data.generatedImage}" download="ai-image.jpg" class="download-btn"><i class="fa-solid fa-download"></i> ছবি ডাউনলোড করুন</a>
+          `;
+        } else if (data.reply) {
           botMsgDiv.innerHTML = `
             <div class="bot-content">${escapeHTML(data.reply)}</div>
             <button class="copy-btn" onclick="copyReply(this)"><i class="fa-regular fa-copy"></i> কপি করুন</button>
