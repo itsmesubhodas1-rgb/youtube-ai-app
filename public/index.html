@@ -6,7 +6,13 @@
   <title>YouTube AI Assistant</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-</head>
+</head><link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js");
+    }
+  </script>
 <body class="bg-slate-900 text-white flex flex-col h-screen overflow-hidden">
 
   <!-- লগইন ওভারলে -->
