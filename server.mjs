@@ -1,9 +1,12 @@
 import express from "express";
 import { GoogleGenAI } from "@google/genai";
-
+import path from "path";
 const app = express();
 app.use(express.json({ limit: "50mb" }));
 app.use(express.static("public"));
+app.get('/.well-known/assetlinks.json', (req, res) => {
+  res.sendFile(path.join(process.cwd(), 'public', '.well-known', 'assetlinks.json'));
+});
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
