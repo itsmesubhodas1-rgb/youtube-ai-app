@@ -1,48 +1,73 @@
 import express from "express";
+import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
 
+dotenv.config();
+
 const app = express();
-// ছবির সাইজ বড় হতে পারে তাই লিমিট বাড়ানো হয়েছে
-app.use(express.json({ limit: "20mb" }));
+app.use(express.json({ limit: "50mb" }));
 app.use(express.static("public"));
 
-// আপনার আসল API Key এখানে বসান
-const ai = new GoogleGenAI();
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 app.post("/chat", async (req, res) => {
   try {
     const { message, image } = req.body;
-    const contents = [];
 
-    // ব্যবহারকারীর টেক্সট যোগ করা
-    if (message) {
-      contents.push({ text: message });
-    }
+    // যদি ইউজার ছবি বানাতে বলেন (যেমন: "ছবি বানাও", "কার্টুন বানাও", "image", "generate")
+    const isImageRequest = /(ছবি বানাও|ছবি তৈরি|কার্টুন বানাও|image|photo|generate image|draw|picture)/i.test(message || "");
 
-    // যদি ছবি আপলোড করা হয়
-    if (image && image.data && image.mimeType) {
-      contents.push({
-        inlineData: {
-          data: image.data,
-          mimeType: image.mimeType,
-        },
+    if (isImageRequest && !image) {
+      // Imagen 3 মডেল দিয়ে ছবি তৈরি
+      const response = await ai.models.generateImages({
+        model: "imagen-3.0-generate-002",
+        prompt: message,
+        config: {
+          numberOfImages: 1,
+          outputMimeType: "image/jpeg",
+          aspectRatio: "1:1" // ১:১ স্কয়ার ছবি
+        }
+      });
+
+      const base64ImageBytes = response.generatedImages[0].image.imageBytes;
+      const imageUrl = `data:image/jpeg;base64,${base64ImageBytes}`;
+
+      return res.json({ 
+        reply: "আপনার বর্ণনানুযায়ী ছবিটি নিচে তৈরি করে দেওয়া হলো:",
+        generatedImage: imageUrl 
       });
     }
 
+    // সাধারণ চ্যাট বা থাম্বনেইল ভিশন অ্যানালাইসিস
+    const parts = [];
+    if (image) {
+      const base64Data = image.split(",")[1];
+      const mimeType = image.split(";")[0].split(":")[1];
+      parts.push({
+        inlineData: {
+          data: base64Data,
+          mimeType: mimeType
+        }
+      });
+    }
+
+    if (message) {
+      parts.push(message);
+    }
+
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash-lite",
-      contents: contents,
-      config: {
-        systemInstruction: "তুমি একজন বিশেষজ্ঞ YouTube কন্টেন্ট ও থাম্বনেইল ডিজাইনার ক্রিয়েটর অ্যাসিস্ট্যান্ট। ছবি দিলে তার থাম্বনেইল কোয়ালিটি, কালার, টেক্সট বিশ্লেষণ করে বাংলায় বাস্তবসম্মত পরামর্শ দেবে।",
-      },
+      model: "gemini-2.5-flash",
+      contents: parts
     });
 
     res.json({ reply: response.text });
   } catch (error) {
-    res.status(500).json({ reply: "ত্রুটি: " + error.message });
+    console.error("Error details:", error);
+    res.status(500).json({ error: "সার্ভারে সমস্যা হয়েছে।" });
   }
 });
 
-app.listen(3000, () => {
-  console.log("সার্ভার চালু হয়েছে: http://localhost:3000");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
