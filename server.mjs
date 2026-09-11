@@ -5,7 +5,14 @@ const app = express();
 app.use(express.json({ limit: "50mb" }));
 app.use(express.static("public"));
 app.get('/.well-known/assetlinks.json', (req, res) => {
-  res.sendFile(path.join(process.cwd(), 'public', '.well-known', 'assetlinks.json'));
+  res.json([{
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.onrender.youtube_ai_app.twa",
+      "sha256_cert_fingerprints": ["8D:40:A0:48:CD:BE:E4:AB:A8:D3:2C:3E:85:98:86:9F:99:36:94:29:66:FF:E3:CC:35:14:8C:A3"]
+    }
+  }]);
 });
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
