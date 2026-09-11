@@ -33,14 +33,22 @@
   <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700 py-3 px-4 flex items-center justify-between">
     <div class="flex items-center gap-2">
       <svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
-      <h1 class="font-bold text-lg">YouTube AI Assistant</h1>
+      <h1 class="font-bold text-lg hidden sm:inline">YouTube AI Assistant</h1>
     </div>
     
-    <!-- ইউজার প্রোফাইল ও লগআউট বাটন -->
-    <div id="userProfile" class="hidden flex items-center gap-3">
-      <img id="userAvatar" src="" class="w-8 h-8 rounded-full border border-slate-600 object-cover" alt="User">
-      <span id="userName" class="text-sm font-medium hidden sm:inline text-slate-300"></span>
-      <button onclick="logOut()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg border border-slate-600 transition">Log Out</button>
+    <!-- ভাষা নির্বাচন ও ইউজার প্রোফাইল -->
+    <div class="flex items-center gap-3">
+      <select id="languageSelect" class="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-xs rounded-xl px-2.5 py-1.5 text-white outline-none cursor-pointer transition">
+        <option value="Bengali" selected>🇧🇩 বাংলা</option>
+        <option value="English">🇺🇸 English</option>
+        <option value="Hindi">🇮🇳 हिंदी</option>
+      </select>
+
+      <div id="userProfile" class="hidden flex items-center gap-2">
+        <img id="userAvatar" src="" class="w-8 h-8 rounded-full border border-slate-600 object-cover" alt="User">
+        <span id="userName" class="text-xs font-medium hidden md:inline text-slate-300"></span>
+        <button onclick="logOut()" class="text-xs bg-red-600/80 hover:bg-red-500 px-2.5 py-1.5 rounded-lg border border-red-500/50 transition">Log Out</button>
+      </div>
     </div>
   </header>
 
@@ -81,8 +89,8 @@
     const userProfile = document.getElementById("userProfile");
     const userAvatar = document.getElementById("userAvatar");
     const userName = document.getElementById("userName");
+    const languageSelect = document.getElementById("languageSelect");
 
-    // JWT ডিকোড করে ইউজারের নাম ও ছবি বের করা
     function parseJwt(token) {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -92,7 +100,6 @@
       return JSON.parse(jsonPayload);
     }
 
-    // গুগল সাইন-ইন রেসপন্স হ্যান্ডলার
     function handleCredentialResponse(response) {
       const user = parseJwt(response.credential);
       localStorage.setItem("user_info", JSON.stringify(user));
@@ -111,7 +118,6 @@
       location.reload();
     }
 
-    // পেজ লোড হলে আগে থেকেই লগইন আছে কিনা চেক
     window.onload = function() {
       const savedUser = localStorage.getItem("user_info");
       if (savedUser) {
@@ -119,7 +125,6 @@
       }
     };
 
-    // চ্যাট হ্যান্ডলিং
     const chatBox = document.getElementById("chatBox");
     const chatForm = document.getElementById("chatForm");
     const userInput = document.getElementById("userInput");
@@ -167,7 +172,11 @@
         const res = await fetch("/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: text, image: currentImage })
+          body: JSON.stringify({ 
+            message: text, 
+            image: currentImage,
+            language: languageSelect.value 
+          })
         });
         const data = await res.json();
         removeMessage(loadingId);
