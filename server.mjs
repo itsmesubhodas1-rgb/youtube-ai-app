@@ -13,12 +13,11 @@ app.post("/chat", async (req, res) => {
 
     const isImageRequest = /(ছবি|chobi|pic|picture|photo|image|কার্টুন|cartoon|draw|generate)/i.test(message || "");
 
-    // ছবি তৈরির রিকোয়েস্ট হলে
+    // ছবি তৈরির রিকোয়েস্ট
     if (isImageRequest && !image) {
       try {
-        // ১. Gemini দিয়ে বাংলা কথাটিকে সেরা ইংলিশ ৩D ইমেজ প্রম্পটে রূপান্তর
         const promptGen = await ai.models.generateContent({
-          model: "gemini-2.5-flash",
+          model: "gemini-3.6-flash",
           contents: [
             `Translate and expand this user request into a concise English image prompt for high-quality 3D cartoon render or digital art: "${message}". Return ONLY the English prompt, nothing else.`
           ]
@@ -26,7 +25,6 @@ app.post("/chat", async (req, res) => {
 
         const refinedPrompt = promptGen.text ? promptGen.text.trim().replace(/[\n\r]+/g, " ") : message;
         
-        // ২. ফ্রি হাই-কোয়ালিটি ইমেজ জেনারেটর URL তৈরি
         const seed = Math.floor(Math.random() * 1000000);
         const encodedPrompt = encodeURIComponent(refinedPrompt);
         const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&seed=${seed}&nologo=true`;
@@ -59,7 +57,7 @@ app.post("/chat", async (req, res) => {
     }
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.6-flash",
       contents: parts
     });
 
