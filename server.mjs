@@ -11,7 +11,8 @@ app.post("/chat", async (req, res) => {
   try {
     const { message, image } = req.body;
 
-    const isImageRequest = /(ছবি বানাও|ছবি তৈরি|কার্টুন বানাও|image|photo|generate image|draw|picture)/i.test(message || "");
+    // বাংলা, ইংরেজি এবং বাংলিশ সব ধরণের ছবি চাওয়ার কিওয়ার্ড সাপোর্ট
+    const isImageRequest = /(ছবি|chobi|pic|picture|photo|image|কার্টুন|cartoon|draw|generate)/i.test(message || "");
 
     if (isImageRequest && !image) {
       try {
@@ -29,15 +30,19 @@ app.post("/chat", async (req, res) => {
         const imageUrl = `data:image/jpeg;base64,${base64ImageBytes}`;
 
         return res.json({ 
-          reply: "আপনার বর্ণনানুযায়ী ছবিটি তৈরি করে দেওয়া হলো:",
+          reply: "আপনার ছবিটি তৈরি হয়েছে:",
           generatedImage: imageUrl 
         });
       } catch (imgErr) {
-        console.error("Image Error:", imgErr);
-        return res.json({ reply: `ছবি তৈরির মডেলে সমস্যা হয়েছে: ${imgErr.message}` });
+        console.error("Image generation failed:", imgErr);
+        // যদি ফ্রি API Key-তে Imagen 3 সাপোর্ট না করে তবে আসল কারণ জানিয়ে দেবে
+        return res.json({ 
+          reply: `⚠️ ছবি তৈরিতে সমস্যা হয়েছে: ${imgErr.message || "Imagen 3 মডেলটি এই API Key দিয়ে অ্যাক্সেস করা যাচ্ছে না।"}` 
+        });
       }
     }
 
+    // সাধারণ চ্যাট ও ভিশন
     const parts = [];
     if (image) {
       const base64Data = image.split(",")[1];
@@ -62,7 +67,7 @@ app.post("/chat", async (req, res) => {
     res.json({ reply: response.text });
   } catch (error) {
     console.error("Server Error:", error);
-    res.status(500).json({ error: "সার্ভারে সমস্যা হয়েছে।" });
+    res.status(500).json({ reply: `সার্ভার সমস্যা: ${error.message}` });
   }
 });
 
