@@ -14,18 +14,17 @@ app.post("/chat", async (req, res) => {
   try {
     const { message, image } = req.body;
 
-    // যদি ইউজার ছবি বানাতে বলেন (যেমন: "ছবি বানাও", "কার্টুন বানাও", "image", "generate")
+    // টেক্সট টু ইমেজ রিকোয়েস্ট যাচাই
     const isImageRequest = /(ছবি বানাও|ছবি তৈরি|কার্টুন বানাও|image|photo|generate image|draw|picture)/i.test(message || "");
 
     if (isImageRequest && !image) {
-      // Imagen 3 মডেল দিয়ে ছবি তৈরি
       const response = await ai.models.generateImages({
         model: "imagen-3.0-generate-002",
         prompt: message,
         config: {
           numberOfImages: 1,
           outputMimeType: "image/jpeg",
-          aspectRatio: "1:1" // ১:১ স্কয়ার ছবি
+          aspectRatio: "1:1"
         }
       });
 
@@ -33,12 +32,12 @@ app.post("/chat", async (req, res) => {
       const imageUrl = `data:image/jpeg;base64,${base64ImageBytes}`;
 
       return res.json({ 
-        reply: "আপনার বর্ণনানুযায়ী ছবিটি নিচে তৈরি করে দেওয়া হলো:",
+        reply: "আপনার বর্ণনানুযায়ী ছবিটি তৈরি করে দেওয়া হলো:",
         generatedImage: imageUrl 
       });
     }
 
-    // সাধারণ চ্যাট বা থাম্বনেইল ভিশন অ্যানালাইসিস
+    // সাধারণ চ্যাট ও ভিশন
     const parts = [];
     if (image) {
       const base64Data = image.split(",")[1];
