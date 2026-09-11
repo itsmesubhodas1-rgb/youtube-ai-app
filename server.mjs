@@ -11,38 +11,37 @@ app.post("/chat", async (req, res) => {
   try {
     const { message, image } = req.body;
 
-    // বাংলা, ইংরেজি এবং বাংলিশ সব ধরণের ছবি চাওয়ার কিওয়ার্ড সাপোর্ট
     const isImageRequest = /(ছবি|chobi|pic|picture|photo|image|কার্টুন|cartoon|draw|generate)/i.test(message || "");
 
+    // ছবি তৈরির রিকোয়েস্ট হলে
     if (isImageRequest && !image) {
       try {
-        const response = await ai.models.generateImages({
-          model: "imagen-3.0-generate-002",
-          prompt: message,
-          config: {
-            numberOfImages: 1,
-            outputMimeType: "image/jpeg",
-            aspectRatio: "1:1"
-          }
+        // ১. Gemini দিয়ে বাংলা কথাটিকে সেরা ইংলিশ ৩D ইমেজ প্রম্পটে রূপান্তর
+        const promptGen = await ai.models.generateContent({
+          model: "gemini-2.5-flash",
+          contents: [
+            `Translate and expand this user request into a concise English image prompt for high-quality 3D cartoon render or digital art: "${message}". Return ONLY the English prompt, nothing else.`
+          ]
         });
 
-        const base64ImageBytes = response.generatedImages[0].image.imageBytes;
-        const imageUrl = `data:image/jpeg;base64,${base64ImageBytes}`;
+        const refinedPrompt = promptGen.text ? promptGen.text.trim().replace(/[\n\r]+/g, " ") : message;
+        
+        // ২. ফ্রি হাই-কোয়ালিটি ইমেজ জেনারেটর URL তৈরি
+        const seed = Math.floor(Math.random() * 1000000);
+        const encodedPrompt = encodeURIComponent(refinedPrompt);
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&seed=${seed}&nologo=true`;
 
         return res.json({ 
-          reply: "আপনার ছবিটি তৈরি হয়েছে:",
+          reply: `🎨 আপনার বর্ণনানুযায়ী ছবিটি তৈরি করা হয়েছে!`,
           generatedImage: imageUrl 
         });
       } catch (imgErr) {
-        console.error("Image generation failed:", imgErr);
-        // যদি ফ্রি API Key-তে Imagen 3 সাপোর্ট না করে তবে আসল কারণ জানিয়ে দেবে
-        return res.json({ 
-          reply: `⚠️ ছবি তৈরিতে সমস্যা হয়েছে: ${imgErr.message || "Imagen 3 মডেলটি এই API Key দিয়ে অ্যাক্সেস করা যাচ্ছে না।"}` 
-        });
+        console.error("Image Error:", imgErr);
+        return res.json({ reply: `ছবি তৈরিতে সমস্যা হয়েছে: ${imgErr.message}` });
       }
     }
 
-    // সাধারণ চ্যাট ও ভিশন
+    // সাধারণ চ্যাট ও থাম্বনেইল ভিশন
     const parts = [];
     if (image) {
       const base64Data = image.split(",")[1];
