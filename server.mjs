@@ -9,11 +9,11 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 app.post("/chat", async (req, res) => {
   try {
-    const { message, image } = req.body;
+    const { message, image, language = "Bengali" } = req.body;
 
     const isImageRequest = /(ছবি|chobi|pic|picture|photo|image|কার্টুন|cartoon|draw|generate)/i.test(message || "");
 
-    // ছবি তৈরির রিকোয়েস্ট
+    // ছবি তৈরির অনুরোধ
     if (isImageRequest && !image) {
       try {
         const promptGen = await ai.models.generateContent({
@@ -29,8 +29,10 @@ app.post("/chat", async (req, res) => {
         const encodedPrompt = encodeURIComponent(refinedPrompt);
         const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&seed=${seed}&nologo=true`;
 
+        const replyMsg = language === "English" ? "🎨 Your image has been generated!" : (language === "Hindi" ? "🎨 आपकी छवि तैयार कर दी गई है!" : "🎨 আপনার ছবিটি তৈরি করা হয়েছে!");
+
         return res.json({ 
-          reply: `🎨 আপনার বর্ণনানুযায়ী ছবিটি তৈরি করা হয়েছে!`,
+          reply: replyMsg,
           generatedImage: imageUrl 
         });
       } catch (imgErr) {
@@ -39,7 +41,7 @@ app.post("/chat", async (req, res) => {
       }
     }
 
-    // সাধারণ চ্যাট ও থাম্বনেইল ভিশন
+    // সাধারণ চ্যাট ও ভিশন
     const parts = [];
     if (image) {
       const base64Data = image.split(",")[1];
@@ -53,7 +55,7 @@ app.post("/chat", async (req, res) => {
     }
 
     if (message) {
-      parts.push(message);
+      parts.push(`You are a YouTube AI Assistant. You must reply strictly in ${language}. User query: ${message}`);
     }
 
     const response = await ai.models.generateContent({
