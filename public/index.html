@@ -3,332 +3,247 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YouTube AI Assistant with Vision</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    body {
-      background-color: #0f172a;
-      color: #f8fafc;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
-    header {
-      background-color: #1e293b;
-      padding: 15px 20px;
-      text-align: center;
-      border-bottom: 1px solid #334155;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
-    }
-    header h1 {
-      font-size: 1.2rem;
-      color: #38bdf8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
-    #chat-container {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    .message {
-      max-width: 85%;
-      padding: 12px 16px;
-      border-radius: 12px;
-      line-height: 1.5;
-      font-size: 15px;
-      position: relative;
-      word-wrap: break-word;
-    }
-    .user {
-      background-color: #2563eb;
-      color: #fff;
-      align-self: flex-end;
-      border-bottom-right-radius: 2px;
-    }
-    .bot {
-      background-color: #1e293b;
-      color: #e2e8f0;
-      align-self: flex-start;
-      border-bottom-left-radius: 2px;
-      border: 1px solid #334155;
-    }
-    .bot-content {
-      white-space: pre-wrap;
-    }
-    .generated-img {
-      max-width: 100%;
-      border-radius: 8px;
-      margin-top: 10px;
-      display: block;
-      border: 1px solid #475569;
-    }
-    .download-btn {
-      margin-top: 8px;
-      background-color: #0284c7;
-      color: white;
-      text-decoration: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .download-btn:hover {
-      background-color: #0369a1;
-    }
-    .copy-btn {
-      margin-top: 8px;
-      background-color: #334155;
-      border: none;
-      color: #94a3b8;
-      padding: 4px 8px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 12px;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      transition: all 0.2s;
-    }
-    .copy-btn:hover {
-      background-color: #475569;
-      color: #fff;
-    }
-    .image-preview-container {
-      padding: 10px 20px 0;
-      display: none;
-      align-items: center;
-      gap: 10px;
-    }
-    .preview-box {
-      position: relative;
-      display: inline-block;
-    }
-    .preview-box img {
-      height: 60px;
-      border-radius: 8px;
-      border: 2px solid #38bdf8;
-    }
-    .remove-img {
-      position: absolute;
-      top: -8px;
-      right: -8px;
-      background: #ef4444;
-      color: white;
-      border-radius: 50%;
-      width: 20px;
-      height: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 12px;
-    }
-    #input-container {
-      background-color: #1e293b;
-      padding: 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      border-top: 1px solid #334155;
-    }
-    #file-input {
-      display: none;
-    }
-    .upload-btn {
-      background-color: #334155;
-      color: #38bdf8;
-      border: none;
-      padding: 10px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 14px;
-    }
-    .upload-btn:hover {
-      background-color: #475569;
-    }
-    #user-input {
-      flex: 1;
-      padding: 12px;
-      background-color: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 8px;
-      color: #fff;
-      font-size: 14px;
-      outline: none;
-    }
-    #user-input:focus {
-      border-color: #38bdf8;
-    }
-    #send-btn {
-      background-color: #10b981;
-      color: white;
-      border: none;
-      padding: 12px 18px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    #send-btn:hover {
-      background-color: #059669;
-    }
-    #send-btn:disabled {
-      background-color: #64748b;
-      cursor: not-allowed;
-    }
-  </style>
+  <title>YouTube AI Assistant</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Sign-In SDK -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
-<body>
+<body class="bg-slate-900 text-white flex flex-col h-screen overflow-hidden">
 
-  <header>
-    <h1><i class="fa-brands fa-youtube" style="color: #ef4444;"></i> YouTube AI Assistant</h1>
+  <!-- লগইন ওভারলে স্ক্রিন -->
+  <div id="loginOverlay" class="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center z-50 p-4">
+    <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl flex flex-col items-center max-w-sm w-full text-center">
+      <div class="w-16 h-16 bg-red-600/10 text-red-500 rounded-full flex items-center justify-center mb-4">
+        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+      </div>
+      <h2 class="text-2xl font-bold mb-2">YouTube AI Assistant</h2>
+      <p class="text-slate-400 text-sm mb-6">অ্যাপটি ব্যবহার করার জন্য আপনার গুগল একাউন্ট দিয়ে সাইন-ইন করুন।</p>
+      
+      <!-- গুগল অফিশিয়াল সাইন-ইন বাটন -->
+      <div id="g_id_onload"
+           data-client_id="231722960025-hqt16pajnl4kg9lddoa3flppj4ttof8n.apps.googleusercontent.com"
+           data-callback="handleCredentialResponse"
+           data-auto_prompt="false">
+      </div>
+      <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="signin_with" data-size="large" data-logo_alignment="left"></div>
+    </div>
+  </div>
+
+  <!-- হেডার -->
+  <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700 py-3 px-4 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+      <h1 class="font-bold text-lg">YouTube AI Assistant</h1>
+    </div>
+    
+    <!-- ইউজার প্রোফাইল ও লগআউট বাটন -->
+    <div id="userProfile" class="hidden flex items-center gap-3">
+      <img id="userAvatar" src="" class="w-8 h-8 rounded-full border border-slate-600 object-cover" alt="User">
+      <span id="userName" class="text-sm font-medium hidden sm:inline text-slate-300"></span>
+      <button onclick="logOut()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg border border-slate-600 transition">Log Out</button>
+    </div>
   </header>
 
-  <div id="chat-container">
-    <div class="message bot">
-      <div class="bot-content">নমস্কার! আমি আপনার ইউটিউব কনটেন্ট সহকারী। চিত্র বা ভিডিওর জন্য ছবি তৈরি করতে লিখুন "ছবি বানাও..." 🎨 অথবা থাম্বনেইল পাঠিয়ে মতামত নিন!</div>
+  <!-- চ্যাটবক্স -->
+  <main id="chatBox" class="flex-1 overflow-y-auto p-4 space-y-4 max-w-4xl mx-auto w-full">
+    <div class="flex items-start gap-3">
+      <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 max-w-[85%] text-slate-200">
+        নমস্কার! আমি আপনার ইউটিউব কনটেন্ট সহকারী। চিত্র বা ভিডিওর জন্য ছবি তৈরি করতে লিখুন “ছবি বানাও...” 🎨 অথবা থাম্বনেইল পাঠিয়ে মতামত নিন!
+      </div>
     </div>
+  </main>
+
+  <!-- প্রিভিউ বক্স -->
+  <div id="previewContainer" class="hidden px-4 py-2 bg-slate-800/90 border-t border-slate-700 max-w-4xl mx-auto w-full flex items-center gap-3">
+    <img id="imagePreview" src="" alt="Preview" class="h-16 w-16 object-cover rounded-xl border border-slate-600">
+    <button id="removeImage" class="text-xs text-red-400 hover:text-red-300 font-medium">ছবি বাতিল করুন</button>
   </div>
 
-  <div class="image-preview-container" id="preview-area">
-    <div class="preview-box">
-      <img id="preview-img" src="" alt="Preview">
-      <div class="remove-img" onclick="clearImage()">✕</div>
-    </div>
-  </div>
+  <!-- ইনপুট বার -->
+  <footer class="p-4 bg-slate-900 border-t border-slate-800">
+    <form id="chatForm" class="max-w-4xl mx-auto flex items-center gap-2 bg-slate-800/80 p-2 rounded-2xl border border-slate-700">
+      <input type="file" id="imageInput" accept="image/*" class="hidden">
+      <button type="button" onclick="document.getElementById('imageInput').click()" class="p-2.5 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl transition flex items-center gap-1 text-sm">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        <span class="hidden sm:inline">ছবি দিন</span>
+      </button>
 
-  <div id="input-container">
-    <input type="file" id="file-input" accept="image/*" onchange="handleImage(event)">
-    <button class="upload-btn" onclick="document.getElementById('file-input').click()">
-      <i class="fa-solid fa-image"></i> ছবি দিন
-    </button>
-    <input type="text" id="user-input" placeholder="প্রশ্ন লিখুন অথবা ছবি তৈরি করতে বলুন..." onkeypress="handleEnter(event)">
-    <button id="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
-  </div>
+      <input type="text" id="userInput" placeholder="প্রশ্ন লিখুন অথবা ছবি তৈরি করতে বলুন..." class="flex-1 bg-transparent border-none outline-none px-3 text-white placeholder-slate-500 text-sm">
+      
+      <button type="submit" class="bg-cyan-600 hover:bg-cyan-500 text-white p-2.5 rounded-xl transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+      </button>
+    </form>
+  </footer>
 
   <script>
-    let selectedImageBase64 = null;
+    const loginOverlay = document.getElementById("loginOverlay");
+    const userProfile = document.getElementById("userProfile");
+    const userAvatar = document.getElementById("userAvatar");
+    const userName = document.getElementById("userName");
 
-    function handleImage(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        selectedImageBase64 = event.target.result;
-        document.getElementById("preview-img").src = selectedImageBase64;
-        document.getElementById("preview-area").style.display = "flex";
-      };
-      reader.readAsDataURL(file);
+    // JWT ডিকোড করে ইউজারের নাম ও ছবি বের করা
+    function parseJwt(token) {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
     }
 
-    function clearImage() {
-      selectedImageBase64 = null;
-      document.getElementById("file-input").value = "";
-      document.getElementById("preview-area").style.display = "none";
+    // গুগল সাইন-ইন রেসপন্স হ্যান্ডলার
+    function handleCredentialResponse(response) {
+      const user = parseJwt(response.credential);
+      localStorage.setItem("user_info", JSON.stringify(user));
+      showAuthenticatedUser(user);
     }
 
-    function handleEnter(e) {
-      if (e.key === "Enter") sendMessage();
+    function showAuthenticatedUser(user) {
+      userAvatar.src = user.picture;
+      userName.textContent = user.name;
+      userProfile.classList.remove("hidden");
+      loginOverlay.classList.add("hidden");
     }
 
-    async function sendMessage() {
-      const input = document.getElementById("user-input");
-      const text = input.value.trim();
-      const sendBtn = document.getElementById("send-btn");
+    function logOut() {
+      localStorage.removeItem("user_info");
+      location.reload();
+    }
 
-      if (!text && !selectedImageBase64) return;
-
-      const chatContainer = document.getElementById("chat-container");
-      const userMsgDiv = document.createElement("div");
-      userMsgDiv.className = "message user";
-      if (text) userMsgDiv.innerText = text;
-      if (selectedImageBase64) {
-        const userImg = document.createElement("img");
-        userImg.src = selectedImageBase64;
-        userImg.style.maxWidth = "100%";
-        userImg.style.borderRadius = "6px";
-        userImg.style.marginTop = text ? "8px" : "0px";
-        userMsgDiv.appendChild(userImg);
+    // পেজ লোড হলে আগে থেকেই লগইন আছে কিনা চেক
+    window.onload = function() {
+      const savedUser = localStorage.getItem("user_info");
+      if (savedUser) {
+        showAuthenticatedUser(JSON.parse(savedUser));
       }
-      chatContainer.appendChild(userMsgDiv);
+    };
 
-      const postData = {
-        message: text,
-        image: selectedImageBase64
-      };
+    // চ্যাট হ্যান্ডলিং
+    const chatBox = document.getElementById("chatBox");
+    const chatForm = document.getElementById("chatForm");
+    const userInput = document.getElementById("userInput");
+    const imageInput = document.getElementById("imageInput");
+    const previewContainer = document.getElementById("previewContainer");
+    const imagePreview = document.getElementById("imagePreview");
+    const removeImage = document.getElementById("removeImage");
 
-      input.value = "";
-      clearImage();
-      chatContainer.scrollTop = chatContainer.scrollHeight;
+    let base64Image = null;
 
-      sendBtn.disabled = true;
-      const botMsgDiv = document.createElement("div");
-      botMsgDiv.className = "message bot";
-      botMsgDiv.innerHTML = `<div class="bot-content">তৈরি করা হচ্ছে... ⏳</div>`;
-      chatContainer.appendChild(botMsgDiv);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
+    imageInput.addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          base64Image = evt.target.result;
+          imagePreview.src = base64Image;
+          previewContainer.classList.remove("hidden");
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    removeImage.addEventListener("click", () => {
+      base64Image = null;
+      imageInput.value = "";
+      previewContainer.classList.add("hidden");
+    });
+
+    chatForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const text = userInput.value.trim();
+      if (!text && !base64Image) return;
+
+      appendUserMessage(text, base64Image);
+      userInput.value = "";
+      const currentImage = base64Image;
+      base64Image = null;
+      imageInput.value = "";
+      previewContainer.classList.add("hidden");
+
+      const loadingId = appendLoadingMessage();
 
       try {
         const res = await fetch("/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(postData)
+          body: JSON.stringify({ message: text, image: currentImage })
         });
         const data = await res.json();
-        
-        if (data.generatedImage) {
-          botMsgDiv.innerHTML = `
-            <div class="bot-content">${escapeHTML(data.reply)}</div>
-            <img src="${data.generatedImage}" class="generated-img" alt="AI Generated Image" />
-            <a href="${data.generatedImage}" download="ai-image.jpg" class="download-btn"><i class="fa-solid fa-download"></i> ছবি ডাউনলোড করুন</a>
-          `;
-        } else if (data.reply) {
-          botMsgDiv.innerHTML = `
-            <div class="bot-content">${escapeHTML(data.reply)}</div>
-            <button class="copy-btn" onclick="copyReply(this)"><i class="fa-regular fa-copy"></i> কপি করুন</button>
-          `;
-        } else {
-          botMsgDiv.innerHTML = `<div class="bot-content">ত্রুটি: উত্তর পাওয়া যায়নি।</div>`;
-        }
+        removeMessage(loadingId);
+        appendBotMessage(data.reply, data.generatedImage);
       } catch (err) {
-        botMsgDiv.innerHTML = `<div class="bot-content">ত্রুটি: সার্ভারে যোগাযোগ করা যায়নি।</div>`;
-      } finally {
-        sendBtn.disabled = false;
-        chatContainer.scrollTop = chatContainer.scrollHeight;
+        removeMessage(loadingId);
+        appendBotMessage("ত্রুটি: সার্ভারে যোগাযোগ করা সম্ভব হয়নি।");
       }
+    });
+
+    function appendUserMessage(text, imageSrc) {
+      const div = document.createElement("div");
+      div.className = "flex justify-end";
+      let imgHTML = imageSrc ? `<img src="${imageSrc}" class="w-48 h-48 object-cover rounded-xl mb-2 border border-blue-400">` : "";
+      div.innerHTML = `
+        <div class="bg-blue-600 text-white p-3 rounded-2xl max-w-[85%]">
+          ${imgHTML}
+          <p>${text}</p>
+        </div>
+      `;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function escapeHTML(str) {
-      return str.replace(/[&<>'"]/g, 
-        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
-      );
+    function appendBotMessage(text, generatedImageUrl) {
+      const div = document.createElement("div");
+      div.className = "flex items-start gap-3";
+
+      let imgHTML = "";
+      if (generatedImageUrl) {
+        imgHTML = `
+          <div class="mt-3">
+            <img src="${generatedImageUrl}" class="max-w-xs sm:max-w-md w-full rounded-xl border border-slate-600 shadow-lg object-contain">
+            <a href="${generatedImageUrl}" target="_blank" download="generated-image.jpg" class="mt-2 inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-2 rounded-lg transition font-medium">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              ছবি ডাউনলোড করুন
+            </a>
+          </div>
+        `;
+      }
+
+      div.innerHTML = `
+        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 max-w-[85%] text-slate-200">
+          <p class="whitespace-pre-wrap">${text}</p>
+          ${imgHTML}
+          <div class="mt-2 flex gap-2">
+            <button onclick="navigator.clipboard.writeText(this.parentElement.previousElementSibling.innerText)" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              কপি করুন
+            </button>
+          </div>
+        </div>
+      `;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function copyReply(btn) {
-      const textToCopy = btn.previousElementSibling.innerText;
-      navigator.clipboard.writeText(textToCopy).then(() => {
-        btn.innerHTML = `<i class="fa-solid fa-check"></i> কপি হয়েছে!`;
-        setTimeout(() => {
-          btn.innerHTML = `<i class="fa-regular fa-copy"></i> কপি করুন`;
-        }, 2000);
-      });
+    function appendLoadingMessage() {
+      const id = "loading-" + Date.now();
+      const div = document.createElement("div");
+      div.id = id;
+      div.className = "flex items-start gap-3";
+      div.innerHTML = `
+        <div class="bg-slate-800 px-4 py-3 rounded-2xl border border-slate-700 flex items-center gap-2 text-slate-400 text-sm">
+          <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
+          ভাবছি...
+        </div>
+      `;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      return id;
+    }
+
+    function removeMessage(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
     }
   </script>
 </body>
