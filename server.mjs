@@ -9,11 +9,11 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 app.post("/chat", async (req, res) => {
   try {
-    const { message, image, language = "Bengali" } = req.body;
+    const { message, image, language = "Bengali", aspectRatio = "1:1" } = req.body;
 
     const isImageRequest = /(ছবি|chobi|pic|picture|photo|image|কার্টুন|cartoon|draw|generate)/i.test(message || "");
 
-    // ছবি তৈরির অনুরোধ
+    // ছবি তৈরি
     if (isImageRequest && !image) {
       try {
         const promptGen = await ai.models.generateContent({
@@ -25,11 +25,24 @@ app.post("/chat", async (req, res) => {
 
         const refinedPrompt = promptGen.text ? promptGen.text.trim().replace(/[\n\r]+/g, " ") : message;
         
+        // রেজোলিউশন নির্ধারণ
+        let width = 1024;
+        let height = 1024;
+        if (aspectRatio === "9:16") {
+          width = 768;
+          height = 1344;
+        } else if (aspectRatio === "16:9") {
+          width = 1344;
+          height = 768;
+        }
+
         const seed = Math.floor(Math.random() * 1000000);
         const encodedPrompt = encodeURIComponent(refinedPrompt);
-        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&seed=${seed}&nologo=true`;
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&nologo=true`;
 
-        const replyMsg = language === "English" ? "🎨 Your image has been generated!" : (language === "Hindi" ? "🎨 आपकी छवि तैयार कर दी गई है!" : "🎨 আপনার ছবিটি তৈরি করা হয়েছে!");
+        const replyMsg = language === "English" 
+          ? "🎨 Your image has been generated!" 
+          : (language === "Hindi" ? "🎨 आपकी छवि तैयार कर दी गई है!" : "🎨 আপনার ছবিটি তৈরি করা হয়েছে!");
 
         return res.json({ 
           reply: replyMsg,
@@ -41,7 +54,7 @@ app.post("/chat", async (req, res) => {
       }
     }
 
-    // সাধারণ চ্যাট ও ভিশন
+    // সাধারণ চ্যাট ও থাম্বনেইল ভিশন
     const parts = [];
     if (image) {
       const base64Data = image.split(",")[1];
@@ -55,7 +68,7 @@ app.post("/chat", async (req, res) => {
     }
 
     if (message) {
-      parts.push(`You are a YouTube AI Assistant. You must reply strictly in ${language}. User query: ${message}`);
+      parts.push(`You are an expert YouTube AI Assistant. You must reply strictly in ${language}. User query: ${message}`);
     }
 
     const response = await ai.models.generateContent({
