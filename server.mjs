@@ -23,13 +23,13 @@ app.post("/chat", async (req, res) => {
 
     const isImageRequest = /(ছবি|chobi|pic|picture|photo|image|কার্টুন|cartoon|draw|generate)/i.test(message || "");
 
-    // ছবি তৈরি
+    
     if (isImageRequest && !image) {
       try {
         const promptGen = await ai.models.generateContent({
           model: "gemini-3.6-flash",
           contents: [
-            `Translate and expand this user request into a concise English image prompt for high-quality 3D cartoon render or digital art: "${message}". Return ONLY the English prompt, nothing else.`
+           `Translate and expand this user request into a masterpiece, highly detailed, photorealistic 4K/8K resolution English image prompt. Include ultra-detailed textures, cinematic lighting, sharp focus, 3D cartoon or octane digital art style: "${message}"`
           ]
         });
 
