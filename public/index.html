@@ -213,41 +213,29 @@
       }
     }
 
-   // ব্রাউজারের ভয়েস প্রিলোড করে রাখা
-let availableVoices = [];
-function loadAppVoices() {
-  availableVoices = window.speechSynthesis.getVoices();
-}
-loadAppVoices();
-if (window.speechSynthesis.onvoiceschanged !== undefined) {
-  window.speechSynthesis.onvoiceschanged = loadAppVoices;
-}
-
-function speakText(text) {
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  const targetLang = (langData[languageSelect.value] || langData.Bengali).speechLang;
-  utterance.lang = targetLang;
-
-  if (availableVoices.length === 0) {
-    availableVoices = window.speechSynthesis.getVoices();
+   function speakText(text) {
+  if (window.currentAudio) {
+    window.currentAudio.pause();
+    window.currentAudio.currentTime = 0;
   }
 
-  // ১. উন্নত ন্যাচারাল মেল ভয়েস ফিল্টার করা (Google / Natural / Male)
-  const naturalMaleVoice = availableVoices.find(v => 
-    (v.lang.startsWith(targetLang.slice(0, 2)) || v.lang === targetLang) &&
-    (v.name.includes("Google") || v.name.includes("Natural") || v.name.includes("Male") || v.name.includes("David") || v.name.includes("George"))
-  ) || availableVoices.find(v => v.lang.startsWith(targetLang.slice(0, 2))) || availableVoices[0];
+  const targetLang = (langData[languageSelect.value] || langData.Bengali).speechLang || "bn";
+  const langCode = targetLang.split("-")[0];
 
-  if (naturalMaleVoice) {
-    utterance.voice = naturalMaleVoice;
-  }
+  const cleanText = text.replace(/[*#_`]/g, '').trim();
+  const encodedText = encodeURIComponent(cleanText.slice(0, 200));
 
-  // ২. মানুষের মতো স্বাভাবিক ফ্রিকোয়েন্সি টিউনিং
-  utterance.pitch = 0.90; // রোবটের ধাতব তীক্ষ্ণতা কমিয়ে ভারী ও স্পষ্ট করবে
-  utterance.rate = 0.88;  // স্বাভাবিক নিঃশ্বাসের গতিতে শান্তভাবে পড়বে
+  const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=${langCode}&client=tw-ob`;
 
-  window.speechSynthesis.speak(utterance);
+  const audio = new Audio(audioUrl);
+  window.currentAudio = audio;
+  
+  audio.play().catch(err => {
+    console.log("Audio play error, falling back to speech synthesis", err);
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = targetLang;
+    window.speechSynthesis.speak(utterance);
+  });
 }
     let isListening = false;
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
