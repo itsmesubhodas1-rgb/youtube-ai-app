@@ -25,40 +25,41 @@ app.post("/chat", async (req, res) => {
 
     
     if (isImageRequest && !image) {
-     let refinedPrompt = message;
-      try {
-        const promptGen = await ai.models.generateContent({
-          model: "gemini-2.5-flash",
-          contents: [
-            `Quickly convert to a short 4K English image prompt: "${message}". Output only the prompt text.`
-          ]
-        });
+    let refinedPrompt = message;
+    try {
+      const promptGen = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [
+          `Quickly convert to a short 4K English image prompt: "${message}". Output only the prompt text.`
+        ]
+      });
       if (promptGen && promptGen.text) {
-          refinedPrompt = typeof promptGen.text === 'function' ? promptGen.text().trim() : String(promptGen.text).trim();
-        }
-      } catch (geminiError) {
-        console.log("Gemini quota hit, using raw message instead.");
-        refinedPrompt = message;
+        refinedPrompt = typeof promptGen.text === 'function' ? promptGen.text().trim() : String(promptGen.text).trim();
       }
+    } catch (geminiError) {
+      console.log("Gemini quota hit, using raw message instead.");
+      refinedPrompt = message;
+    }
 
-      let width = 1024;
-      let height = 1024;
-      if (aspectRatio === "9:16") {
-        width = 768;
-        height = 1344;
-      } else if (aspectRatio === "16:9") {
-        width = 1344;
-        height = 768;
-      }
+    let width = 1024;
+    let height = 1024;
+    if (aspectRatio === "9:16") {
+      width = 768;
+      height = 1344;
+    } else if (aspectRatio === "16:9") {
+      width = 1344;
+      height = 768;
+    }
 
-      const seed = Math.floor(Math.random() * 1000000);
-      const encodedPrompt = encodeURIComponent(refinedPrompt);
-      const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&model=flux-realism&enhance=true&nologo=true`;
-        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&model=flux-realism&enhance=true&nologo=true`;
-          height = 1344;
-        } else if (aspectRatio === "16:9") {
-          width = 1344;
-          height = 768;
+    const seed = Math.floor(Math.random() * 1000000);
+    const encodedPrompt = encodeURIComponent(refinedPrompt);
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&model=flux-realism&enhance=true&nologo=true`;
+
+    return res.json({
+      reply: `এখানে আপনার 4K ছবি:`,
+      imageUrl: imageUrl
+    });
+  }
         }
 
         const seed = Math.floor(Math.random() * 1000000);
