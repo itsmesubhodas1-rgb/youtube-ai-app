@@ -32,11 +32,20 @@ app.post("/chat", async (req, res) => {
             `Translate and expand this user request into a photorealistic 4K image prompt: "${message}". The input can be in Bengali, Hindi, or English. Output ONLY the final English description without introductory text or explanation.`
           ]
         });
+let refinedPrompt = message;
+        try {
+          if (promptGen && typeof promptGen.text === 'function') {
+            refinedPrompt = promptGen.text().trim();
+          } else if (promptGen && promptGen.text) {
+            refinedPrompt = String(promptGen.text).trim();
+          }
+        } catch (e) {
+          refinedPrompt = message;
+        }
 
-        const refinedPrompt = (promptGen && promptGen.text) ? promptGen.text.trim() : message;
-        // রেজোলিউশন নির্ধারণ
-        let width = 1920;
-        let height = 1920;
+        // Flux-এর জন্য আদর্শ ও সেরা রেজোলিউশন
+        let width = 1024;
+        let height = 1024;
         if (aspectRatio === "9:16") {
           width = 768;
           height = 1344;
@@ -47,8 +56,7 @@ app.post("/chat", async (req, res) => {
 
         const seed = Math.floor(Math.random() * 1000000);
         const encodedPrompt = encodeURIComponent(refinedPrompt);
-        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&model=flux&enhance=true&nologo=true`;
-
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&model=flux-realism&nologo=true`;
         const replyMsg = language === "English" 
           ? "🎨 Your image has been generated!" 
           : (language === "Hindi" ? "🎨 आपकी छवि तैयार कर दी गई है!" : "🎨 আপনার ছবিটি তৈরি করা হয়েছে!");
