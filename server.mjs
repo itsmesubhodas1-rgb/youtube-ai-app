@@ -35,8 +35,8 @@ app.post("/chat", async (req, res) => {
         const refinedPrompt = promptGen.text ? promptGen.text.trim().replace(/[\n\r]+/g, " ") : message;
         
         // রেজোলিউশন নির্ধারণ
-        let width = 1024;
-        let height = 1024;
+        let width = 1920;
+        let height = 1920;
         if (aspectRatio === "9:16") {
           width = 768;
           height = 1344;
