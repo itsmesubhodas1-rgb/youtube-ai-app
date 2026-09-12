@@ -28,8 +28,8 @@ app.post("/chat", async (req, res) => {
       try {
         const promptGen = await ai.models.generateContent({
          model: "gemini-3.6-flash",
-          contents: [
-            `Translate and expand this user request into a photorealistic 4K image prompt: "${message}". The input can be in Bengali, Hindi, or English. Output ONLY the final English description without introductory text or explanation.`
+          contents: [`Quickly convert to a short 4K English image prompt: "${message}". Output only the prompt text.`
+            
           ]
         });
 let refinedPrompt = message;
