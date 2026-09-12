@@ -47,7 +47,7 @@ let refinedPrompt = message;
         }
 
         const seed = Math.floor(Math.random() * 1000000);
-        const encodedPrompt = encodeURIComponent(refinedPrompt);
+       const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&model=turbo&enhance=true&nologo=true`;
         
         // flux-realism মডেল + enhance প্যারামিটার
         const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&model=flux-realism&enhance=true&nologo=true`;
