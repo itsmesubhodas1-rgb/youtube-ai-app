@@ -35,19 +35,22 @@ app.post("/chat", async (req, res) => {
 let refinedPrompt = message;
         try {
           if (promptGen && typeof promptGen.text === 'function') {
-            refinedPrompt = promptGen.text().trim();
-          } else if (promptGen && promptGen.text) {
-            refinedPrompt = String(promptGen.text).trim();
-          }
-        } catch (e) {
-          refinedPrompt = message;
-        }
-
-        // Flux-এর জন্য আদর্শ ও সেরা রেজোলিউশন
+           // Flux মডেলের নিখুঁত 4K ডিটেইলসের জন্য আদর্শ সাইজ
         let width = 1024;
         let height = 1024;
         if (aspectRatio === "9:16") {
           width = 768;
+          height = 1344;
+        } else if (aspectRatio === "16:9") {
+          width = 1344;
+          height = 768;
+        }
+
+        const seed = Math.floor(Math.random() * 1000000);
+        const encodedPrompt = encodeURIComponent(refinedPrompt);
+        
+        // flux-realism মডেল + enhance প্যারামিটার
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&model=flux-realism&enhance=true&nologo=true`;
           height = 1344;
         } else if (aspectRatio === "16:9") {
           width = 1344;
