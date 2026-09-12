@@ -33,28 +33,27 @@ app.post("/chat", async (req, res) => {
             `Quickly convert to a short 4K English image prompt: "${message}". Output only the prompt text.`
           ]
         });
-        if (promptGen && promptGen.text) {
+      if (promptGen && promptGen.text) {
           refinedPrompt = typeof promptGen.text === 'function' ? promptGen.text().trim() : String(promptGen.text).trim();
         }
       } catch (geminiError) {
         console.log("Gemini quota hit, using raw message instead.");
         refinedPrompt = message;
-     
-           // Flux মডেলের নিখুঁত 4K ডিটেইলসের জন্য আদর্শ সাইজ
-        let width = 1024;
-        let height = 1024;
-        if (aspectRatio === "9:16") {
-          width = 768;
-          height = 1344;
-        } else if (aspectRatio === "16:9") {
-          width = 1344;
-          height = 768;
-        }
+      }
 
-        const seed = Math.floor(Math.random() * 1000000);
-       const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&model=turbo&enhance=true&nologo=true`;
-        
-        // flux-realism মডেল + enhance প্যারামিটার
+      let width = 1024;
+      let height = 1024;
+      if (aspectRatio === "9:16") {
+        width = 768;
+        height = 1344;
+      } else if (aspectRatio === "16:9") {
+        width = 1344;
+        height = 768;
+      }
+
+      const seed = Math.floor(Math.random() * 1000000);
+      const encodedPrompt = encodeURIComponent(refinedPrompt);
+      const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&model=flux-realism&enhance=true&nologo=true`;
         const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&model=flux-realism&enhance=true&nologo=true`;
           height = 1344;
         } else if (aspectRatio === "16:9") {
