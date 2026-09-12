@@ -28,12 +28,13 @@ app.post("/chat", async (req, res) => {
       try {
         const promptGen = await ai.models.generateContent({
          model: "gemini-3.6-flash",
+          model: "gemini-3.6-flash",
           contents: [
-            `Translate and expand this user request into a masterpiece, highly detailed, photorealistic 4K/8K resolution English image prompt. Include ultra-detailed textures, cinematic lighting, sharp focus, 3D cartoon or digital art style: "${message}"`
+            `Translate this into a detailed English prompt for photorealistic 4K image: "${message}". Only output the English description, no explanation.`
           ]
         });
-        const refinedPrompt = promptGen.text ? promptGen.text.trim().replace(/[\n\r]+/g, " ") : message;
-        
+
+        const refinedPrompt = (promptGen && promptGen.text) ? promptGen.text.trim() : message;
         // রেজোলিউশন নির্ধারণ
         let width = 1920;
         let height = 1920;
