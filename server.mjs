@@ -25,16 +25,21 @@ app.post("/chat", async (req, res) => {
 
     
     if (isImageRequest && !image) {
+     let refinedPrompt = message;
       try {
         const promptGen = await ai.models.generateContent({
-         model: "gemini-3.6-flash",
-          contents: [`Quickly convert to a short 4K English image prompt: "${message}". Output only the prompt text.`
-            
+          model: "gemini-2.5-flash",
+          contents: [
+            `Quickly convert to a short 4K English image prompt: "${message}". Output only the prompt text.`
           ]
         });
-let refinedPrompt = message;
-        try {
-          if (promptGen && typeof promptGen.text === 'function') {
+        if (promptGen && promptGen.text) {
+          refinedPrompt = typeof promptGen.text === 'function' ? promptGen.text().trim() : String(promptGen.text).trim();
+        }
+      } catch (geminiError) {
+        console.log("Gemini quota hit, using raw message instead.");
+        refinedPrompt = message;
+     
            // Flux মডেলের নিখুঁত 4K ডিটেইলসের জন্য আদর্শ সাইজ
         let width = 1024;
         let height = 1024;
