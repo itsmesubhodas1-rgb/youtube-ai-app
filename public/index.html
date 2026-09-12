@@ -213,31 +213,42 @@
       }
     }
 
-    function speakText(text) {
+   // ব্রাউজারের ভয়েস প্রিলোড করে রাখা
+let availableVoices = [];
+function loadAppVoices() {
+  availableVoices = window.speechSynthesis.getVoices();
+}
+loadAppVoices();
+if (window.speechSynthesis.onvoiceschanged !== undefined) {
+  window.speechSynthesis.onvoiceschanged = loadAppVoices;
+}
+
+function speakText(text) {
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   const targetLang = (langData[languageSelect.value] || langData.Bengali).speechLang;
   utterance.lang = targetLang;
 
-  // ব্রাউজারে থাকা সেরা ন্যাচারাল মেল ভয়েস সিলেক্ট করা
-  const voices = window.speechSynthesis.getVoices();
-  const naturalMaleVoice = voices.find(v => 
+  if (availableVoices.length === 0) {
+    availableVoices = window.speechSynthesis.getVoices();
+  }
+
+  // ১. উন্নত ন্যাচারাল মেল ভয়েস ফিল্টার করা (Google / Natural / Male)
+  const naturalMaleVoice = availableVoices.find(v => 
     (v.lang.startsWith(targetLang.slice(0, 2)) || v.lang === targetLang) &&
     (v.name.includes("Google") || v.name.includes("Natural") || v.name.includes("Male") || v.name.includes("David") || v.name.includes("George"))
-  );
+  ) || availableVoices.find(v => v.lang.startsWith(targetLang.slice(0, 2))) || availableVoices[0];
 
   if (naturalMaleVoice) {
     utterance.voice = naturalMaleVoice;
   }
 
-  // ছেলেদের কণ্ঠে রেডিও/পডকাস্টের মতো স্পষ্ট ও গম্ভীর ভাব আনার টিউনিং
-  utterance.pitch = 0.95; // কর্কশ রোবট টোন দূর করবে
-  utterance.rate = 0.92;  // স্বাভাবিক শান্ত গতিতে পড়বে
+  // ২. মানুষের মতো স্বাভাবিক ফ্রিকোয়েন্সি টিউনিং
+  utterance.pitch = 0.90; // রোবটের ধাতব তীক্ষ্ণতা কমিয়ে ভারী ও স্পষ্ট করবে
+  utterance.rate = 0.88;  // স্বাভাবিক নিঃশ্বাসের গতিতে শান্তভাবে পড়বে
 
   window.speechSynthesis.speak(utterance);
 }
-
-    let recognition;
     let isListening = false;
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
