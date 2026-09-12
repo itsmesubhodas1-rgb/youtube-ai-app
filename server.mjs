@@ -47,7 +47,7 @@ app.post("/chat", async (req, res) => {
 
         const seed = Math.floor(Math.random() * 1000000);
         const encodedPrompt = encodeURIComponent(refinedPrompt);
-        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&nologo=true`;
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&model=flux&enhance=true&nologo=true`;
 
         const replyMsg = language === "English" 
           ? "🎨 Your image has been generated!" 
