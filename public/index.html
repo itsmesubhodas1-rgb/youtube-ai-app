@@ -223,31 +223,42 @@
   const langCode = targetLang.split("-")[0];
 
   const cleanText = text.replace(/[*#_`]/g, '').trim();
-  const encodedText = encodeURIComponent(cleanText.slice(0, 200));
-
-  const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=${langCode}&client=tw-ob`;
-
-  const audio = new Audio(audioUrl);
-  window.currentAudio = audio;
   
-  audio.play().catch(err => {
-    console.log("Audio play error, falling back to speech synthesis", err);
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.lang = targetLang;
-    window.speechSynthesis.speak(utterance);
-  });
-}
-    let isListening = false;
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
+  // বাক্য অনুযায়ী টেক্সট ভাগ করা
+  const sentences = cleanText.match(/[^।?!.\n]+[।?!.\n]+/g) || [cleanText];
+  let currentIndex = 0;
 
-      recognition.onstart = () => {
-        isListening = true;
-        micIcon.classList.add("text-red-500", "animate-pulse");
-      };
+  function playNextSentence() {
+    if (currentIndex >= sentences.length) return;
+
+    const currentSentence = sentences[currentIndex].trim();
+    currentIndex++;
+
+    if (!currentSentence) {
+      playNextSentence();
+      return;
+    }
+
+    const encodedText = encodeURIComponent(currentSentence);
+    const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=${langCode}&client=tw-ob`;
+
+    const audio = new Audio(audioUrl);
+    window.currentAudio = audio;
+
+    // একটি বাক্য শেষ হলে পরের বাক্য বাজবে
+    audio.onended = playNextSentence;
+
+    audio.play().catch(err => {
+      console.log("Audio play error, falling back to speech synthesis", err);
+      const utterance = new SpeechSynthesisUtterance(currentSentence);
+      utterance.lang = targetLang;
+      utterance.onend = playNextSentence;
+      window.speechSynthesis.speak(utterance);
+    });
+  }
+
+  playNextSentence();
+}
 
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
