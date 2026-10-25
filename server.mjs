@@ -27,7 +27,19 @@ app.post("/chat", async (req, res) => {
     if (isImageRequest && !image) {
     let refinedPrompt = message;
     try {
-      const promptGen = await ai.models.generateContent({
+      const promptGen = await ai.models.generateContent({const response = await ai.models.generateContent({
+  model: 'gemini-2.5-flash',
+  contents: message,
+  config: {
+    systemInstruction: `You are an intelligent AI assistant built for the YouTube AI App.
+Developer Information:
+- Name: Subho Das
+- Address: Dhuliyan, Murshidabad, West Bengal, PIN - 742202, India
+
+If anyone asks who created you, who made you, or asks for your developer's name or address, politely answer:
+"Amake toiri korechen amr developer Subho Das. Tini West Bengal-er Murshidabad zillar Dhuliyan (PIN: 742202) er bashinda."`
+  }
+});
         model: "gemini-2.5-flash",
         contents: [
           `Quickly convert to a short 4K English image prompt: "${message}". Output only the prompt text.`
