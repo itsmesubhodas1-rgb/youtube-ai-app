@@ -27,19 +27,10 @@ app.post("/chat", async (req, res) => {
     if (isImageRequest && !image) {
     let refinedPrompt = message;
     try {
-      const promptGen = await ai.models.generateContent({const response = await ai.models.generateContent({
-  model: 'gemini-2.5-flash',
-  contents: message,
-  config: {
-    systemInstruction: `You are an intelligent AI assistant built for the YouTube AI App.
-Developer Information:
-- Name: Subho Das
-- Address: Dhuliyan, Murshidabad, West Bengal, PIN - 742202, India
-
-If anyone asks who created you, who made you, or asks for your developer's name or address, politely answer:
-"Amake toiri korechen amr developer Subho Das. Tini West Bengal-er Murshidabad zillar Dhuliyan (PIN: 742202) er bashinda."`
-  }
-});
+      const promptGen = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: `Translate or expand into a short 4K English image generation prompt (without any extra intro): "${message}"`
+      });
         model: "gemini-2.5-flash",
         contents: [
           `Quickly convert to a short 4K English image prompt: "${message}". Output only the prompt text.`
@@ -105,7 +96,24 @@ If anyone asks who created you, who made you, or asks for your developer's name 
     }
 
     if (message) {
-      parts.push(`You are an expert YouTube AI Assistant. You must reply strictly in ${language}. User query: ${message}`);
+     parts.push(`You are an expert YouTube AI Assistant. You must reply strictly in ${language}. User query: ${message}`);
+```
+
+---
+
+### যা করতে হবে:
+
+১. এডিটরে **৯৯ নম্বর লাইনের** ওই সম্পূর্ণ লেখাটি মুছে ফেলুন[cite: 13]।
+২. ঠিক সেই জায়গায় নিচের কোডটুকু পেস্ট করে দিন:
+
+```javascript
+    parts.push(`You are an expert YouTube AI Assistant. You must reply strictly in ${language}.
+Developer Info:
+- Creator/Developer: Subho Das
+- Address: Dhuliyan, Murshidabad, West Bengal, PIN - 742202, India
+If anyone asks who created you, who made you, or asks for your developer's name or location, politely answer:
+"Amake toiri korechen amr developer Subho Das. Tini West Bengal-er Murshidabad zillar Dhuliyan (PIN: 742202) er bashinda."
+User query: ${message}`);
     }
 
     const response = await ai.models.generateContent({
